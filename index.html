@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>HDG Cotizador Hanomag</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --gold: #F5C518;
+    --gold-dark: #C9A10E;
+    --gold-light: #FFD84D;
+    --black: #0D0D0D;
+    --gray-900: #1A1A1A;
+    --gray-800: #242424;
+    --gray-700: #333333;
+    --gray-600: #4A4A4A;
+    --gray-400: #888888;
+    --gray-200: #CCCCCC;
+    --white: #F5F5F0;
+    --danger: #E53E3E;
+    --success: #38A169;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--gray-900);
+    border-bottom: 3px solid var(--gold);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-badge {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--black);
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .header-text p {
+    font-size: 10px;
+    color: var(--gray-400);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .admin-btn {
+    background: transparent;
+    border: 1px solid var(--gray-600);
+    color: var(--gray-400);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .admin-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── MAIN ── */
+  .main { padding: 24px 20px; max-width: 600px; margin: 0 auto; }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-700);
+  }
+
+  /* ── INPUTS ── */
+  .input-group { margin-bottom: 16px; }
+  .input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 6px;
+  }
+  .input-field {
+    width: 100%;
+    background: var(--gray-800);
+    border: 1.5px solid var(--gray-700);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    color: var(--white);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .input-field:focus { border-color: var(--gold); }
+  .input-field::placeholder { color: var(--gray-600); }
+  .input-field.currency { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; }
+
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .flete-note {
+    font-size: 10px;
+    color: var(--gray-600);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  /* ── RESULTADO CARDS ── */
+  .results-section { margin-top: 28px; }
+  .result-card {
+    background: var(--gray-800);
+    border: 1.5px solid var(--gray-700);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .result-card:hover { border-color: var(--gray-600); }
+  .result-card.featured {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, #1f1a00 0%, var(--gray-800) 100%);
+  }
+  .card-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--gray-700);
+  }
+  .card-plan {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray-200);
+  }
+  .featured .card-plan { color: var(--gold); }
+  .card-badge {
+    background: var(--gold);
+    color: var(--black);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .card-body { padding: 14px 16px; }
+  .card-total {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--white);
+    line-height: 1;
+  }
+  .featured .card-total { color: var(--gold-light); }
+  .card-total span { font-size: 16px; color: var(--gray-400); margin-right: 4px; }
+  .card-sub {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 4px;
+  }
+  .card-cuotas {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .cuota-item {
+    background: var(--gray-900);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .cuota-label { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; }
+  .cuota-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    margin-top: 2px;
+  }
+  .cuota-detail { font-size: 10px; color: var(--gray-600); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--gray-600);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── BOTÓN PDF ── */
+  .btn-pdf {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--black);
+    border: none;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-pdf:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,197,24,0.3); }
+  .btn-pdf:active { transform: translateY(0); }
+  .btn-pdf:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── MODAL ADMIN ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--gray-900);
+    border: 1.5px solid var(--gray-700);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--gray-700);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+  .modal-close {
+    background: var(--gray-700);
+    border: none;
+    color: var(--white);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 16px 24px 20px;
+    border-top: 1px solid var(--gray-700);
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    flex: 1;
+    background: transparent;
+    color: var(--gray-400);
+    border: 1px solid var(--gray-700);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* PIN */
+  .pin-container { text-align: center; padding: 10px 0 20px; }
+  .pin-title { font-size: 14px; color: var(--gray-400); margin-bottom: 16px; }
+  .pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--gray-600);
+    transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+  .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 240px; margin: 0 auto; }
+  .pin-key {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .pin-key:active { background: var(--gold); color: var(--black); }
+  .pin-key.del { font-size: 14px; color: var(--gray-400); }
+  .pin-error { color: var(--danger); font-size: 12px; margin-top: 12px; }
+
+  /* ADMIN FORM */
+  .admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-800);
+  }
+  .admin-row:last-child { border-bottom: none; }
+  .admin-row-label { font-size: 13px; color: var(--gray-200); }
+  .admin-row-sub { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+  .admin-input {
+    background: var(--gray-800);
+    border: 1px solid var(--gray-700);
+    border-radius: 6px;
+    padding: 8px 10px;
+    width: 90px;
+    color: var(--white);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    text-align: right;
+    outline: none;
+  }
+  .admin-input:focus { border-color: var(--gold); }
+  .admin-input-suffix { font-size: 12px; color: var(--gray-600); margin-left: 4px; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--success);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 300;
+    transition: transform 0.3s;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 400px) {
+    .input-row { grid-template-columns: 1fr; }
+    .card-total { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-badge">HDG</div>
+    <div class="header-text">
+      <h1>Cotizador</h1>
+      <p>Hanomag · HDG Maquinarias</p>
+    </div>
+  </div>
+  <button class="admin-btn" onclick="openAdmin()">⚙ Admin</button>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="section-label">Datos del equipo</div>
+
+  <div class="input-group">
+    <label class="input-label">Modelo / Descripción</label>
+    <input class="input-field" id="modelo" type="text" placeholder="Ej: Tractor Hanomag 500/4" oninput="calcular()">
+  </div>
+
+  <div class="input-row">
+    <div class="input-group">
+      <label class="input-label">Precio Contado (USD)</label>
+      <input class="input-field currency" id="precioContado" type="number" placeholder="0" min="0" oninput="calcular()">
+    </div>
+    <div class="input-group">
+      <label class="input-label">Flete (USD)</label>
+      <input class="input-field currency" id="flete" type="number" placeholder="0" min="0" oninput="calcular()">
+      <p class="flete-note">Uso interno · No figura en PDF</p>
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div class="results-section" id="resultados">
+    <div class="section-label">Planes de pago</div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🚜</div>
+      <p>Ingresá el precio de contado para ver los planes</p>
+    </div>
+    <div id="cardsContainer"></div>
+  </div>
+
+  <button class="btn-pdf" id="btnPdf" onclick="generarPDF()" disabled>
+    ⬇ Generar cotización PDF
+  </button>
+
+</main>
+
+<!-- MODAL ADMIN (PIN) -->
+<div class="modal-overlay" id="modalPin">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Panel Admin</span>
+      <button class="modal-close" onclick="cerrarModal('modalPin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pin-container">
+        <p class="pin-title">Ingresá el PIN de administrador</p>
+        <div class="pin-dots" id="pinDots">
+          <div class="pin-dot" id="dot0"></div>
+          <div class="pin-dot" id="dot1"></div>
+          <div class="pin-dot" id="dot2"></div>
+          <div class="pin-dot" id="dot3"></div>
+        </div>
+        <div class="pin-keypad">
+          <button class="pin-key" onclick="pinPress('1')">1</button>
+          <button class="pin-key" onclick="pinPress('2')">2</button>
+          <button class="pin-key" onclick="pinPress('3')">3</button>
+          <button class="pin-key" onclick="pinPress('4')">4</button>
+          <button class="pin-key" onclick="pinPress('5')">5</button>
+          <button class="pin-key" onclick="pinPress('6')">6</button>
+          <button class="pin-key" onclick="pinPress('7')">7</button>
+          <button class="pin-key" onclick="pinPress('8')">8</button>
+          <button class="pin-key" onclick="pinPress('9')">9</button>
+          <button class="pin-key" onclick="pinPress('')"></button>
+          <button class="pin-key" onclick="pinPress('0')">0</button>
+          <button class="pin-key del" onclick="pinDel()">⌫</button>
+        </div>
+        <p class="pin-error" id="pinError"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADMIN (CONFIG) -->
+<div class="modal-overlay" id="modalAdmin">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Configuración</span>
+      <button class="modal-close" onclick="cerrarModal('modalAdmin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-label" style="margin-bottom:16px">Tasas de financiación</div>
+
+      <div class="admin-row">
+        <div>
+          <div class="admin-row-label">Col 2 — 4 cheques / 45d</div>
+          <div class="admin-row-sub">Recargo sobre contado</div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <input class="admin-input" id="tasa2" type="number" step="0.1" min="0">
+          <span class="admin-input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="admin-row">
+        <div>
+          <div class="admin-row-label">Col 3 — 7 cheques / 90d</div>
+          <div class="admin-row-sub">Recargo sobre contado</div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <input class="admin-input" id="tasa3" type="number" step="0.1" min="0">
+          <span class="admin-input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="admin-row">
+        <div>
+          <div class="admin-row-label">Col 4 — 13 cheques / 180d</div>
+          <div class="admin-row-sub">Recargo sobre contado</div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <input class="admin-input" id="tasa4" type="number" step="0.1" min="0">
+          <span class="admin-input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px;margin-bottom:16px">Impuestos</div>
+
+      <div class="admin-row">
+        <div>
+          <div class="admin-row-label">IVA</div>
+          <div class="admin-row-sub">Incluido en Cuota 1</div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <input class="admin-input" id="tasaIva" type="number" step="0.1" min="0">
+          <span class="admin-input-suffix">%</span>
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:20px;margin-bottom:16px">Seguridad</div>
+      <div class="admin-row">
+        <div>
+          <div class="admin-row-label">Cambiar PIN</div>
+          <div class="admin-row-sub">PIN actual requerido al ingresar</div>
+        </div>
+        <button onclick="cambiarPin()" style="background:transparent;border:1px solid var(--gray-600);color:var(--gray-400);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">Cambiar</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarModal('modalAdmin')">Cancelar</button>
+      <button class="btn-primary" onclick="guardarConfig()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIAR PIN -->
+<div class="modal-overlay" id="modalCambiarPin">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nuevo PIN</span>
+      <button class="modal-close" onclick="cerrarModal('modalCambiarPin')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="input-group">
+        <label class="input-label">Nuevo PIN (4 dígitos)</label>
+        <input class="input-field" id="nuevoPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Confirmar PIN</label>
+        <input class="input-field" id="confirmarPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+      </div>
+      <p class="pin-error" id="pinCambioError"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarModal('modalCambiarPin')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmarCambioPin()">Guardar PIN</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG POR DEFECTO ──
+const CONFIG_KEY = 'hdg_config';
+const PIN_KEY = 'hdg_pin';
+
+function getConfig() {
+  const raw = localStorage.getItem(CONFIG_KEY);
+  if (raw) return JSON.parse(raw);
+  return { tasa2: 6.1, tasa3: 12.0, tasa4: 23.7, iva: 10.5 };
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+}
+
+function getPin() {
+  return localStorage.getItem(PIN_KEY) || '1234';
+}
+
+// ── CÁLCULO ──
+function fmt(n) {
+  return n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+let datosCalculo = null;
+
+function calcular() {
+  const cfg = getConfig();
+  const contadoRaw = parseFloat(document.getElementById('precioContado').value) || 0;
+  const flete = parseFloat(document.getElementById('flete').value) || 0;
+  const modelo = document.getElementById('modelo').value.trim();
+
+  const cards = document.getElementById('cardsContainer');
+  const empty = document.getElementById('emptyState');
+  const btn = document.getElementById('btnPdf');
+
+  if (contadoRaw <= 0) {
+    cards.innerHTML = '';
+    empty.style.display = 'block';
+    btn.disabled = true;
+    datosCalculo = null;
+    return;
+  }
+
+  empty.style.display = 'none';
+  btn.disabled = false;
+
+  // Col 1 contado + flete
+  const col1 = contadoRaw + flete;
+  const ivaCol1 = col1 * (cfg.iva / 100);
+  const cuota1_col1 = col1 + ivaCol1; // pago único total con IVA
+
+  // Col 2 — 4 cheques
+  const col2base = contadoRaw * (1 + cfg.tasa2 / 100);
+  const col2 = col2base + flete;
+  const ivaCol2 = col2 * (cfg.iva / 100);
+  const cuota1_col2 = (col2 / 4) + ivaCol2;
+  const cuotaRest2 = col2 / 4;
+
+  // Col 3 — 7 cheques
+  const col3base = contadoRaw * (1 + cfg.tasa3 / 100);
+  const col3 = col3base + flete;
+  const ivaCol3 = col3 * (cfg.iva / 100);
+  const cuota1_col3 = (col3 / 7) + ivaCol3;
+  const cuotaRest3 = col3 / 7;
+
+  // Col 4 — 13 cheques
+  const col4base = contadoRaw * (1 + cfg.tasa4 / 100);
+  const col4 = col4base + flete;
+  const ivaCol4 = col4 * (cfg.iva / 100);
+  const cuota1_col4 = (col4 / 13) + ivaCol4;
+  const cuotaRest4 = col4 / 13;
+
+  datosCalculo = {
+    modelo, contadoRaw, flete,
+    col1, ivaCol1, cuota1_col1,
+    col2, ivaCol2, cuota1_col2, cuotaRest2,
+    col3, ivaCol3, cuota1_col3, cuotaRest3,
+    col4, ivaCol4, cuota1_col4, cuotaRest4,
+    cfg
+  };
+
+  cards.innerHTML = `
+    ${cardHTML('Col 1 — Contado', 'CONTADO', true,
+      col1, ivaCol1,
+      [{ label: 'Pago único c/ IVA', value: cuota1_col1, detail: 'IVA incluido' }]
+    )}
+    ${cardHTML('Col 2 — 4 cheques / 45d', `+${cfg.tasa2}% recargo`, false,
+      col2, ivaCol2,
+      [
+        { label: 'Cuota 1 (c/ IVA total)', value: cuota1_col2, detail: 'Incluye IVA completo' },
+        { label: 'Cuotas 2, 3 y 4', value: cuotaRest2, detail: '3 cuotas iguales' }
+      ]
+    )}
+    ${cardHTML('Col 3 — 7 cheques / 90d', `+${cfg.tasa3}% recargo`, false,
+      col3, ivaCol3,
+      [
+        { label: 'Cuota 1 (c/ IVA total)', value: cuota1_col3, detail: 'Incluye IVA completo' },
+        { label: 'Cuotas 2 a 7', value: cuotaRest3, detail: '6 cuotas iguales' }
+      ]
+    )}
+    ${cardHTML('Col 4 — 13 cheques / 180d', `+${cfg.tasa4}% recargo`, false,
+      col4, ivaCol4,
+      [
+        { label: 'Cuota 1 (c/ IVA total)', value: cuota1_col4, detail: 'Incluye IVA completo' },
+        { label: 'Cuotas 2 a 13', value: cuotaRest4, detail: '12 cuotas iguales' }
+      ]
+    )}
+  `;
+}
+
+function cardHTML(plan, badge, featured, total, iva, cuotas) {
+  const cuotasHTML = cuotas.map(c => `
+    <div class="cuota-item">
+      <div class="cuota-label">${c.label}</div>
+      <div class="cuota-value">USD ${fmt(c.value)}</div>
+      <div class="cuota-detail">${c.detail}</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="result-card ${featured ? 'featured' : ''}">
+      <div class="card-header">
+        <span class="card-plan">${plan}</span>
+        <span class="card-badge">${badge}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-total"><span>USD</span>${fmt(total)}</div>
+        <div class="card-sub">IVA incluido: USD ${fmt(iva)}</div>
+        <div class="card-cuotas">${cuotasHTML}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── PDF ──
+async function generarPDF() {
+  if (!datosCalculo) return;
+  const d = datosCalculo;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const W = 210, ml = 18, mr = 192;
+  let y = 0;
+
+  // Fondo negro header
+  doc.setFillColor(13, 13, 13);
+  doc.rect(0, 0, W, 48, 'F');
+
+  // Banda gold
+  doc.setFillColor(245, 197, 24);
+  doc.rect(0, 48, W, 3, 'F');
+
+  // Hexágono logo simulado
+  doc.setFillColor(245, 197, 24);
+  doc.roundedRect(ml, 8, 32, 32, 4, 4, 'F');
+  doc.setTextColor(13, 13, 13);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('HDG', ml + 16, 28, { align: 'center' });
+
+  // Texto header
+  doc.setTextColor(245, 197, 24);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(20);
+  doc.text('COTIZACIÓN HANOMAG', ml + 40, 20);
+
+  doc.setTextColor(180, 180, 180);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('HORACIO D. GIRAUDO — CONCESIONARIO OFICIAL', ml + 40, 28);
+  doc.text('Lista Sugerida Pública N° 2-26 / SIN IVA USD', ml + 40, 35);
+
+  // Fecha
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
+  doc.setTextColor(245, 197, 24);
+  doc.setFontSize(8);
+  doc.text(`Fecha: ${fecha}`, mr, 42, { align: 'right' });
+
+  y = 60;
+
+  // Modelo
+  doc.setFillColor(26, 26, 26);
+  doc.roundedRect(ml, y, mr - ml, 14, 2, 2, 'F');
+  doc.setTextColor(245, 197, 24);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  const modeloText = d.modelo || 'Sin especificar';
+  doc.text(modeloText.toUpperCase(), ml + 6, y + 9.5);
+  y += 22;
+
+  // Tabla
+  const colX = [ml, ml + 55, ml + 100, ml + 145];
+  const colW = [53, 43, 43, 47];
+
+  // Header tabla
+  doc.setFillColor(245, 197, 24);
+  doc.rect(ml, y, mr - ml, 9, 'F');
+  doc.setTextColor(13, 13, 13);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  ['PLAN', 'PRECIO TOTAL', 'CUOTA 1 (c/ IVA)', 'CUOTAS RESTANTES'].forEach((h, i) => {
+    doc.text(h, colX[i] + colW[i] / 2, y + 6, { align: 'center' });
+  });
+  y += 9;
+
+  const rows = [
+    {
+      plan: 'CONTADO', sub: '',
+      total: `USD ${fmt(d.col1)}`,
+      c1: `USD ${fmt(d.cuota1_col1)}`, c1sub: 'Pago único c/ IVA',
+      cr: '—', crsub: ''
+    },
+    {
+      plan: 'COL 2 — 4 CHEQUES', sub: '45 días',
+      total: `USD ${fmt(d.col2)}`,
+      c1: `USD ${fmt(d.cuota1_col2)}`, c1sub: 'Incluye IVA total',
+      cr: `USD ${fmt(d.cuotaRest2)}`, crsub: '3 cuotas iguales'
+    },
+    {
+      plan: 'COL 3 — 7 CHEQUES', sub: '90 días',
+      total: `USD ${fmt(d.col3)}`,
+      c1: `USD ${fmt(d.cuota1_col3)}`, c1sub: 'Incluye IVA total',
+      cr: `USD ${fmt(d.cuotaRest3)}`, crsub: '6 cuotas iguales'
+    },
+    {
+      plan: 'COL 4 — 13 CHEQUES', sub: '180 días',
+      total: `USD ${fmt(d.col4)}`,
+      c1: `USD ${fmt(d.cuota1_col4)}`, c1sub: 'Incluye IVA total',
+      cr: `USD ${fmt(d.cuotaRest4)}`, crsub: '12 cuotas iguales'
+    }
+  ];
+
+  rows.forEach((r, idx) => {
+    const rowH = 16;
+    const bg = idx % 2 === 0 ? [26, 26, 26] : [30, 30, 30];
+    doc.setFillColor(...bg);
+    doc.rect(ml, y, mr - ml, rowH, 'F');
+
+    // Línea gold izquierda para contado
+    if (idx === 0) {
+      doc.setFillColor(245, 197, 24);
+      doc.rect(ml, y, 2, rowH, 'F');
+    }
+
+    // Texto filas
+    doc.setTextColor(220, 220, 220);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(r.plan, colX[0] + 5, y + 6);
+    if (r.sub) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 140);
+      doc.text(r.sub, colX[0] + 5, y + 12);
+    }
+
+    doc.setTextColor(idx === 0 ? 245 : 220, idx === 0 ? 197 : 220, idx === 0 ? 24 : 220);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text(r.total, colX[1] + colW[1] / 2, y + 7, { align: 'center' });
+
+    doc.setTextColor(220, 220, 220);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text(r.c1, colX[2] + colW[2] / 2, y + 6, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(140, 140, 140);
+    doc.text(r.c1sub, colX[2] + colW[2] / 2, y + 12, { align: 'center' });
+
+    if (r.cr !== '—') {
+      doc.setTextColor(220, 220, 220);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text(r.cr, colX[3] + colW[3] / 2, y + 6, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(140, 140, 140);
+      doc.text(r.crsub, colX[3] + colW[3] / 2, y + 12, { align: 'center' });
+    } else {
+      doc.setTextColor(100, 100, 100);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('—', colX[3] + colW[3] / 2, y + 9, { align: 'center' });
+    }
+
+    y += rowH;
+  });
+
+  y += 8;
+
+  // Nota IVA
+  doc.setFillColor(20, 18, 0);
+  doc.roundedRect(ml, y, mr - ml, 10, 2, 2, 'F');
+  doc.setTextColor(245, 197, 24);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('★  La Cuota 1 incluye el IVA completo del equipo (10,5%). Las cuotas restantes son sin IVA adicional.', ml + 5, y + 6.5);
+  y += 18;
+
+  // Footer
+  doc.setFillColor(13, 13, 13);
+  doc.rect(0, 272, W, 25, 'F');
+  doc.setFillColor(245, 197, 24);
+  doc.rect(0, 272, W, 1.5, 'F');
+  doc.setTextColor(100, 100, 100);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text('Precios expresados en USD SIN IVA base. Vigencia sujeta a cambios sin previo aviso.', W / 2, 280, { align: 'center' });
+  doc.setTextColor(245, 197, 24);
+  doc.setFontSize(8);
+  doc.text('HDG MAQUINARIAS AGRÍCOLAS — HORACIO D. GIRAUDO — CONCESIONARIO OFICIAL HANOMAG', W / 2, 288, { align: 'center' });
+
+  const nombreArchivo = `Cotizacion_HDG_${(d.modelo || 'Hanomag').replace(/\s+/g, '_')}_${hoy.toISOString().slice(0,10)}.pdf`;
+  doc.save(nombreArchivo);
+  showToast('✓ PDF generado correctamente');
+}
+
+// ── ADMIN ──
+let pinBuffer = '';
+
+function openAdmin() {
+  pinBuffer = '';
+  actualizarDots();
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('modalPin').classList.add('active');
+}
+
+function pinPress(d) {
+  if (!d) return;
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += d;
+  actualizarDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(validarPin, 200);
+  }
+}
+
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  actualizarDots();
+}
+
+function actualizarDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('dot' + i).classList.toggle('filled', i < pinBuffer.length);
+  }
+}
+
+function validarPin() {
+  if (pinBuffer === getPin()) {
+    cerrarModal('modalPin');
+    abrirConfigAdmin();
+  } else {
+    document.getElementById('pinError').textContent = 'PIN incorrecto. Intentá de nuevo.';
+    pinBuffer = '';
+    actualizarDots();
+  }
+}
+
+function abrirConfigAdmin() {
+  const cfg = getConfig();
+  document.getElementById('tasa2').value = cfg.tasa2;
+  document.getElementById('tasa3').value = cfg.tasa3;
+  document.getElementById('tasa4').value = cfg.tasa4;
+  document.getElementById('tasaIva').value = cfg.iva;
+  document.getElementById('modalAdmin').classList.add('active');
+}
+
+function guardarConfig() {
+  const cfg = {
+    tasa2: parseFloat(document.getElementById('tasa2').value) || 0,
+    tasa3: parseFloat(document.getElementById('tasa3').value) || 0,
+    tasa4: parseFloat(document.getElementById('tasa4').value) || 0,
+    iva: parseFloat(document.getElementById('tasaIva').value) || 0,
+  };
+  saveConfig(cfg);
+  cerrarModal('modalAdmin');
+  calcular();
+  showToast('✓ Configuración guardada');
+}
+
+function cambiarPin() {
+  document.getElementById('nuevoPin').value = '';
+  document.getElementById('confirmarPin').value = '';
+  document.getElementById('pinCambioError').textContent = '';
+  document.getElementById('modalCambiarPin').classList.add('active');
+}
+
+function confirmarCambioPin() {
+  const p1 = document.getElementById('nuevoPin').value;
+  const p2 = document.getElementById('confirmarPin').value;
+  if (p1.length !== 4 || !/^\d{4}$/.test(p1)) {
+    document.getElementById('pinCambioError').textContent = 'El PIN debe tener 4 dígitos numéricos.';
+    return;
+  }
+  if (p1 !== p2) {
+    document.getElementById('pinCambioError').textContent = 'Los PINs no coinciden.';
+    return;
+  }
+  localStorage.setItem(PIN_KEY, p1);
+  cerrarModal('modalCambiarPin');
+  showToast('✓ PIN actualizado');
+}
+
+function cerrarModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Cerrar modales al click afuera
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('active'); });
+});
+</script>
+</body>
+</html>
