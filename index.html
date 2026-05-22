@@ -215,11 +215,11 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
     <div class="modal-body">
       <div class="input-group">
         <label class="input-label">Nuevo PIN (4 d&iacute;gitos)</label>
-        <input class="input-field" id="nuevoPin" type="password" maxlength="4" inputmode="numeric" placeholder="Â·Â·Â·Â·">
+        <input class="input-field" id="nuevoPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
       </div>
       <div class="input-group">
         <label class="input-label">Confirmar PIN</label>
-        <input class="input-field" id="confirmarPin" type="password" maxlength="4" inputmode="numeric" placeholder="Â·Â·Â·Â·">
+        <input class="input-field" id="confirmarPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
       </div>
       <p class="pin-error" id="pinCambioError"></p>
     </div>
@@ -264,12 +264,12 @@ function calcular() {
   }
   empty.style.display = 'none'; btn.disabled = false;
 
-  // â”€â”€ CONTADO â”€â”€
+  // ── CONTADO ──
   // Total = base + IVA(base) + flete
   var iva_contado = base * (cfg.iva / 100);
   var contado_total = base + iva_contado + flete;
 
-  // â”€â”€ COL 2 â€” 4 cheques â”€â”€
+  // ── COL 2 — 4 cheques ──
   // base_fin = base + recargo
   // IVA sobre base_fin
   // cuota_pura = base_fin / 4
@@ -281,14 +281,14 @@ function calcular() {
   var cuota1_2 = cuota_pura2 + iva2 + flete;
   var total2 = base2 + iva2 + flete;
 
-  // â”€â”€ COL 3 â€” 7 cheques â”€â”€
+  // ── COL 3 — 7 cheques ──
   var base3 = base * (1 + cfg.tasa3 / 100);
   var iva3 = base3 * (cfg.iva / 100);
   var cuota_pura3 = base3 / 7;
   var cuota1_3 = cuota_pura3 + iva3 + flete;
   var total3 = base3 + iva3 + flete;
 
-  // â”€â”€ COL 4 â€” 13 cheques â”€â”€
+  // ── COL 4 — 13 cheques ──
   var base4 = base * (1 + cfg.tasa4 / 100);
   var iva4 = base4 * (cfg.iva / 100);
   var cuota_pura4 = base4 / 13;
@@ -305,15 +305,15 @@ function calcular() {
   };
 
   cards.innerHTML =
-    cardHTML('Col 1 â€” Contado', 'CONTADO', true, contado_total, iva_contado,
-      [{label:'Pago Ãºnico', value:contado_total, detail:'Precio + IVA + flete'}]) +
-    cardHTML('Col 2 â€” 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, total2, iva2,
+    cardHTML('Col 1 - Contado', 'CONTADO', true, contado_total, iva_contado,
+      [{label:'Pago único', value:contado_total, detail:'Precio + IVA + flete'}]) +
+    cardHTML('Col 2 - 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, total2, iva2,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_2, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2, 3 y 4', value:cuota_pura2, detail:'3 cuotas sin IVA ni flete'}]) +
-    cardHTML('Col 3 â€” 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, total3, iva3,
+    cardHTML('Col 3 - 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, total3, iva3,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_3, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2 a 7', value:cuota_pura3, detail:'6 cuotas sin IVA ni flete'}]) +
-    cardHTML('Col 4 â€” 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, total4, iva4,
+    cardHTML('Col 4 - 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, total4, iva4,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_4, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2 a 13', value:cuota_pura4, detail:'12 cuotas sin IVA ni flete'}]);
 }
