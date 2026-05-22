@@ -10,12 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root {
-  --gold:#F5C518;--gold-dark:#C9A10E;--gold-light:#FFD84D;
-  --black:#0D0D0D;--gray-900:#1A1A1A;--gray-800:#242424;
-  --gray-700:#333333;--gray-600:#4A4A4A;--gray-400:#888888;
-  --gray-200:#CCCCCC;--white:#F5F5F0;--danger:#E53E3E;--success:#38A169;
-}
+:root{--gold:#F5C518;--gold-dark:#C9A10E;--gold-light:#FFD84D;--black:#0D0D0D;--gray-900:#1A1A1A;--gray-800:#242424;--gray-700:#333333;--gray-600:#4A4A4A;--gray-400:#888888;--gray-200:#CCCCCC;--white:#F5F5F0;--danger:#E53E3E;--success:#38A169;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);min-height:100vh;}
 .header{background:var(--gray-900);border-bottom:3px solid var(--gold);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -121,6 +116,11 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
       <p class="flete-note">Uso interno &middot; No figura en PDF</p>
     </div>
   </div>
+  <div class="input-group">
+    <label class="input-label">Observaciones</label>
+    <textarea class="input-field" id="observaciones" rows="3" placeholder="Ej: Precio v&#225;lido hasta el 31/05/2026. Consultar disponibilidad de stock." style="resize:vertical;"></textarea>
+  </div>
+
   <div class="results-section">
     <div class="section-label">Planes de pago</div>
     <div class="empty-state" id="emptyState">
@@ -132,6 +132,7 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
   <button class="btn-pdf" id="btnPdf" onclick="generarPDF()" disabled>&#11015; Generar cotizaci&oacute;n PDF</button>
 </main>
 
+<!-- MODAL PIN -->
 <div class="modal-overlay" id="modalPin">
   <div class="modal">
     <div class="modal-header">
@@ -165,6 +166,7 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
   </div>
 </div>
 
+<!-- MODAL ADMIN CONFIG -->
 <div class="modal-overlay" id="modalAdmin">
   <div class="modal">
     <div class="modal-header">
@@ -174,20 +176,20 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
     <div class="modal-body">
       <div class="section-label" style="margin-bottom:16px">Tasas de financiaci&oacute;n</div>
       <div class="admin-row">
-        <div><div class="admin-row-label">Col 2 &mdash; 4 cheques / 45d</div><div class="admin-row-sub">Recargo sobre contado</div></div>
+        <div><div class="admin-row-label">Col 2 &mdash; 4 cheques / 45d</div><div class="admin-row-sub">Recargo sobre precio base</div></div>
         <div style="display:flex;align-items:center"><input class="admin-input" id="tasa2" type="number" step="0.1" min="0"><span class="admin-input-suffix">%</span></div>
       </div>
       <div class="admin-row">
-        <div><div class="admin-row-label">Col 3 &mdash; 7 cheques / 90d</div><div class="admin-row-sub">Recargo sobre contado</div></div>
+        <div><div class="admin-row-label">Col 3 &mdash; 7 cheques / 90d</div><div class="admin-row-sub">Recargo sobre precio base</div></div>
         <div style="display:flex;align-items:center"><input class="admin-input" id="tasa3" type="number" step="0.1" min="0"><span class="admin-input-suffix">%</span></div>
       </div>
       <div class="admin-row">
-        <div><div class="admin-row-label">Col 4 &mdash; 13 cheques / 180d</div><div class="admin-row-sub">Recargo sobre contado</div></div>
+        <div><div class="admin-row-label">Col 4 &mdash; 13 cheques / 180d</div><div class="admin-row-sub">Recargo sobre precio base</div></div>
         <div style="display:flex;align-items:center"><input class="admin-input" id="tasa4" type="number" step="0.1" min="0"><span class="admin-input-suffix">%</span></div>
       </div>
       <div class="section-label" style="margin-top:20px;margin-bottom:16px">Impuestos</div>
       <div class="admin-row">
-        <div><div class="admin-row-label">IVA</div><div class="admin-row-sub">Aplicado sobre precio contado base</div></div>
+        <div><div class="admin-row-label">IVA</div><div class="admin-row-sub">Aplicado sobre base financiada</div></div>
         <div style="display:flex;align-items:center"><input class="admin-input" id="tasaIva" type="number" step="0.1" min="0"><span class="admin-input-suffix">%</span></div>
       </div>
       <div class="section-label" style="margin-top:20px;margin-bottom:16px">Seguridad</div>
@@ -203,6 +205,7 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
   </div>
 </div>
 
+<!-- MODAL CAMBIAR PIN -->
 <div class="modal-overlay" id="modalCambiarPin">
   <div class="modal">
     <div class="modal-header">
@@ -249,57 +252,81 @@ var datosCalculo = null;
 
 function calcular() {
   var cfg = getConfig();
-  var contadoRaw = parseFloat(document.getElementById('precioContado').value) || 0;
+  var base = parseFloat(document.getElementById('precioContado').value) || 0;
   var flete = parseFloat(document.getElementById('flete').value) || 0;
   var modelo = document.getElementById('modelo').value.trim();
   var cards = document.getElementById('cardsContainer');
   var empty = document.getElementById('emptyState');
   var btn = document.getElementById('btnPdf');
 
-  if (contadoRaw <= 0) {
+  if (base <= 0) {
     cards.innerHTML = ''; empty.style.display = 'block'; btn.disabled = true; datosCalculo = null; return;
   }
   empty.style.display = 'none'; btn.disabled = false;
 
-  var ivaBase = contadoRaw * (cfg.iva / 100);
-  var col1Total = contadoRaw + ivaBase + flete;
-  var col2maq = contadoRaw * (1 + cfg.tasa2 / 100);
-  var col2Total = col2maq + ivaBase + flete;
-  var cuotaRest2 = col2maq / 4;
-  var cuota1_col2 = cuotaRest2 + ivaBase + flete;
-  var col3maq = contadoRaw * (1 + cfg.tasa3 / 100);
-  var col3Total = col3maq + ivaBase + flete;
-  var cuotaRest3 = col3maq / 7;
-  var cuota1_col3 = cuotaRest3 + ivaBase + flete;
-  var col4maq = contadoRaw * (1 + cfg.tasa4 / 100);
-  var col4Total = col4maq + ivaBase + flete;
-  var cuotaRest4 = col4maq / 13;
-  var cuota1_col4 = cuotaRest4 + ivaBase + flete;
+  // ── CONTADO ──
+  // Total = base + IVA(base) + flete
+  var iva_contado = base * (cfg.iva / 100);
+  var contado_total = base + iva_contado + flete;
 
-  datosCalculo = { modelo: modelo, contadoRaw: contadoRaw, flete: flete, ivaBase: ivaBase,
-    col1Total: col1Total, col2Total: col2Total, cuota1_col2: cuota1_col2, cuotaRest2: cuotaRest2,
-    col3Total: col3Total, cuota1_col3: cuota1_col3, cuotaRest3: cuotaRest3,
-    col4Total: col4Total, cuota1_col4: cuota1_col4, cuotaRest4: cuotaRest4, cfg: cfg };
+  // ── COL 2 — 4 cheques ──
+  // base_fin = base + recargo
+  // IVA sobre base_fin
+  // cuota_pura = base_fin / 4
+  // cuota1 = cuota_pura + IVA(base_fin) + flete
+  // cuotas 2-4 = cuota_pura
+  var base2 = base * (1 + cfg.tasa2 / 100);
+  var iva2 = base2 * (cfg.iva / 100);
+  var cuota_pura2 = base2 / 4;
+  var cuota1_2 = cuota_pura2 + iva2 + flete;
+  var total2 = base2 + iva2 + flete;
+
+  // ── COL 3 — 7 cheques ──
+  var base3 = base * (1 + cfg.tasa3 / 100);
+  var iva3 = base3 * (cfg.iva / 100);
+  var cuota_pura3 = base3 / 7;
+  var cuota1_3 = cuota_pura3 + iva3 + flete;
+  var total3 = base3 + iva3 + flete;
+
+  // ── COL 4 — 13 cheques ──
+  var base4 = base * (1 + cfg.tasa4 / 100);
+  var iva4 = base4 * (cfg.iva / 100);
+  var cuota_pura4 = base4 / 13;
+  var cuota1_4 = cuota_pura4 + iva4 + flete;
+  var total4 = base4 + iva4 + flete;
+
+  datosCalculo = {
+    modelo: modelo, base: base, flete: flete,
+    iva_contado: iva_contado, contado_total: contado_total,
+    base2: base2, iva2: iva2, cuota_pura2: cuota_pura2, cuota1_2: cuota1_2, total2: total2,
+    base3: base3, iva3: iva3, cuota_pura3: cuota_pura3, cuota1_3: cuota1_3, total3: total3,
+    base4: base4, iva4: iva4, cuota_pura4: cuota_pura4, cuota1_4: cuota1_4, total4: total4,
+    cfg: cfg
+  };
 
   cards.innerHTML =
-    cardHTML('Col 1 — Contado', 'CONTADO', true, col1Total, ivaBase,
-      [{label:'Pago único (c/ IVA + Flete)', value:col1Total, detail:'IVA y flete incluidos'}]) +
-    cardHTML('Col 2 — 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, col2Total, ivaBase,
-      [{label:'Cuota 1 (c/ IVA + Flete)', value:cuota1_col2, detail:'IVA total + flete completo'},
-       {label:'Cuotas 2, 3 y 4', value:cuotaRest2, detail:'3 cuotas iguales s/ IVA'}]) +
-    cardHTML('Col 3 — 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, col3Total, ivaBase,
-      [{label:'Cuota 1 (c/ IVA + Flete)', value:cuota1_col3, detail:'IVA total + flete completo'},
-       {label:'Cuotas 2 a 7', value:cuotaRest3, detail:'6 cuotas iguales s/ IVA'}]) +
-    cardHTML('Col 4 — 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, col4Total, ivaBase,
-      [{label:'Cuota 1 (c/ IVA + Flete)', value:cuota1_col4, detail:'IVA total + flete completo'},
-       {label:'Cuotas 2 a 13', value:cuotaRest4, detail:'12 cuotas iguales s/ IVA'}]);
+    cardHTML('Col 1 — Contado', 'CONTADO', true, contado_total, iva_contado,
+      [{label:'Pago único', value:contado_total, detail:'Precio + IVA + flete'}]) +
+    cardHTML('Col 2 — 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, total2, iva2,
+      [{label:'Cuota 1 (IVA + flete)', value:cuota1_2, detail:'IVA total + flete en esta cuota'},
+       {label:'Cuotas 2, 3 y 4', value:cuota_pura2, detail:'3 cuotas sin IVA ni flete'}]) +
+    cardHTML('Col 3 — 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, total3, iva3,
+      [{label:'Cuota 1 (IVA + flete)', value:cuota1_3, detail:'IVA total + flete en esta cuota'},
+       {label:'Cuotas 2 a 7', value:cuota_pura3, detail:'6 cuotas sin IVA ni flete'}]) +
+    cardHTML('Col 4 — 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, total4, iva4,
+      [{label:'Cuota 1 (IVA + flete)', value:cuota1_4, detail:'IVA total + flete en esta cuota'},
+       {label:'Cuotas 2 a 13', value:cuota_pura4, detail:'12 cuotas sin IVA ni flete'}]);
 }
 
 function cardHTML(plan, badge, featured, total, iva, cuotas) {
   var cuotasHTML = cuotas.map(function(c) {
     return '<div class="cuota-item"><div class="cuota-label">'+c.label+'</div><div class="cuota-value">USD '+fmt(c.value)+'</div><div class="cuota-detail">'+c.detail+'</div></div>';
   }).join('');
-  return '<div class="result-card'+(featured?' featured':'')+'"><div class="card-header"><span class="card-plan">'+plan+'</span><span class="card-badge">'+badge+'</span></div><div class="card-body"><div class="card-total"><span>USD</span>'+fmt(total)+'</div><div class="card-sub">IVA incluido: USD '+fmt(iva)+'</div><div class="card-cuotas">'+cuotasHTML+'</div></div></div>';
+  return '<div class="result-card'+(featured?' featured':'')+'">'+
+    '<div class="card-header"><span class="card-plan">'+plan+'</span><span class="card-badge">'+badge+'</span></div>'+
+    '<div class="card-body"><div class="card-total"><span>USD</span>'+fmt(total)+'</div>'+
+    '<div class="card-sub">IVA incluido: USD '+fmt(iva)+'</div>'+
+    '<div class="card-cuotas">'+cuotasHTML+'</div></div></div>';
 }
 
 function generarPDF() {
@@ -307,108 +334,154 @@ function generarPDF() {
   var d = datosCalculo;
   var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  var W = 210, ml = 18, mr = 192;
+  var W = 210, ml = 15, mr = 195, TW = 180;
   var y = 0;
 
-  doc.setFillColor(255,255,255); doc.rect(0,0,W,297,'F');
-  doc.setFillColor(13,13,13); doc.rect(0,0,W,54,'F');
-  doc.setFillColor(245,197,24); doc.rect(0,54,W,3,'F');
+  // Fondo blanco
+  doc.setFillColor(255,255,255);
+  doc.rect(0,0,W,297,'F');
 
-  try { doc.addImage(LOGO_SRC,'JPEG',ml,4,40,46); } catch(e) {
-    doc.setFillColor(245,197,24); doc.roundedRect(ml,8,32,32,4,4,'F');
-    doc.setTextColor(13,13,13); doc.setFont('helvetica','bold'); doc.setFontSize(18);
-    doc.text('HDG',ml+16,28,{align:'center'});
+  // Header negro
+  doc.setFillColor(13,13,13);
+  doc.rect(0,0,W,52,'F');
+
+  // Banda gold
+  doc.setFillColor(245,197,24);
+  doc.rect(0,52,W,3,'F');
+
+  // Logo
+  try {
+    doc.addImage(LOGO_SRC,'JPEG',ml,3,38,46);
+  } catch(e) {
+    doc.setFillColor(245,197,24); doc.roundedRect(ml,8,30,30,3,3,'F');
+    doc.setTextColor(13,13,13); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.text('HDG',ml+15,26,{align:'center'});
   }
 
-  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(19);
-  doc.text('COTIZACIÓN HANOMAG',ml+48,18);
-  doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-  doc.text('HORACIO D. GIRAUDO — CONCESIONARIO OFICIAL',ml+48,27);
-  doc.text('Lista Sugerida Pública N° 2-26 / USD — Vigente desde 27/03/2026',ml+48,35);
-
+  // Textos header
+  var hx = ml + 42;
+  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text('COTIZACION HANOMAG', hx, 17);
+  doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text('HORACIO D. GIRAUDO - CONCESIONARIO OFICIAL', hx, 26);
+  doc.text('Lista Sugerida Publica N 2-26 / USD - Vigente desde 27/03/2026', hx, 34);
   var hoy = new Date();
   var fecha = hoy.toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
   doc.setTextColor(200,200,200); doc.setFontSize(8);
-  doc.text('Fecha: '+fecha,mr,47,{align:'right'});
+  doc.text('Fecha: '+fecha, hx, 43);
 
-  y = 66;
+  y = 63;
 
-  doc.setFillColor(242,242,238); doc.setDrawColor(200,180,0); doc.setLineWidth(0.5);
-  doc.roundedRect(ml,y,mr-ml,13,2,2,'FD');
-  doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(12);
-  doc.text((d.modelo||'Sin especificar').toUpperCase(),ml+6,y+9);
-  y += 20;
+  // Modelo
+  doc.setFillColor(242,242,238);
+  doc.setDrawColor(200,180,0); doc.setLineWidth(0.4);
+  doc.roundedRect(ml,y,TW,12,2,2,'FD');
+  doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text((d.modelo||'Sin especificar').toUpperCase(), ml+5, y+8.5);
+  y += 18;
 
-  var colX=[ml,ml+55,ml+103,ml+150], colW=[53,46,45,42];
-  doc.setFillColor(13,13,13); doc.rect(ml,y,mr-ml,9,'F');
-  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  ['PLAN DE PAGO','PRECIO TOTAL','CUOTA 1 (c/ IVA)','CUOTAS RESTANTES'].forEach(function(h,i){
-    doc.text(h,colX[i]+colW[i]/2,y+6,{align:'center'});
-  });
-  y += 9;
+  // Columnas tabla: Plan | Total | Cuota 1 | Cuotas rest
+  var cX = [ml, ml+46, ml+96, ml+143];
+  var cW = [44, 48, 45, 37];
+
+  // Header tabla
+  doc.setFillColor(13,13,13);
+  doc.rect(ml,y,TW,8,'F');
+  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  var headers = ['PLAN DE PAGO','PRECIO TOTAL','CUOTA 1 (c/ IVA)','CUOTAS RESTANTES'];
+  headers.forEach(function(h,i){ doc.text(h, cX[i]+cW[i]/2, y+5.5, {align:'center'}); });
+  y += 8;
 
   var rows = [
-    {plan:'CONTADO',sub:'',total:d.col1Total,c1:d.col1Total,c1sub:'Pago único c/ IVA y flete',cr:null,crsub:'',isContado:true},
-    {plan:'COL 2 — 4 CHEQUES',sub:'45 días  (+'+d.cfg.tasa2+'% recargo)',total:d.col2Total,c1:d.cuota1_col2,c1sub:'IVA total + flete',cr:d.cuotaRest2,crsub:'3 cuotas iguales s/ IVA',isContado:false},
-    {plan:'COL 3 — 7 CHEQUES',sub:'90 días  (+'+d.cfg.tasa3+'% recargo)',total:d.col3Total,c1:d.cuota1_col3,c1sub:'IVA total + flete',cr:d.cuotaRest3,crsub:'6 cuotas iguales s/ IVA',isContado:false},
-    {plan:'COL 4 — 13 CHEQUES',sub:'180 días  (+'+d.cfg.tasa4+'% recargo)',total:d.col4Total,c1:d.cuota1_col4,c1sub:'IVA total + flete',cr:d.cuotaRest4,crsub:'12 cuotas iguales s/ IVA',isContado:false}
+    {plan:'CONTADO', sub:'', total:d.contado_total, c1:d.contado_total, c1sub:'Pago unico c/ IVA y flete', cr:null, crsub:'', gold:true},
+    {plan:'COL 2 - 4 CHEQUES', sub:'45 dias (+'+d.cfg.tasa2+'%)', total:d.total2, c1:d.cuota1_2, c1sub:'IVA total + flete', cr:d.cuota_pura2, crsub:'3 cuotas s/ IVA', gold:false},
+    {plan:'COL 3 - 7 CHEQUES', sub:'90 dias (+'+d.cfg.tasa3+'%)', total:d.total3, c1:d.cuota1_3, c1sub:'IVA total + flete', cr:d.cuota_pura3, crsub:'6 cuotas s/ IVA', gold:false},
+    {plan:'COL 4 - 13 CHEQUES', sub:'180 dias (+'+d.cfg.tasa4+'%)', total:d.total4, c1:d.cuota1_4, c1sub:'IVA total + flete', cr:d.cuota_pura4, crsub:'12 cuotas s/ IVA', gold:false}
   ];
 
-  rows.forEach(function(r,idx) {
-    var rH=17;
-    var bg=r.isContado?[255,251,220]:(idx%2===0?[250,250,250]:[243,243,243]);
-    doc.setFillColor(bg[0],bg[1],bg[2]); doc.rect(ml,y,mr-ml,rH,'F');
-    doc.setDrawColor(220,220,220); doc.setLineWidth(0.2); doc.line(ml,y+rH,mr,y+rH);
-    if(r.isContado){doc.setFillColor(245,197,24);doc.rect(ml,y,3,rH,'F');}
-    doc.setTextColor(r.isContado?100:30,r.isContado?70:30,0);
+  rows.forEach(function(r, idx) {
+    var rH = 16;
+    var bg = r.gold ? [255,251,215] : (idx%2===0 ? [250,250,250] : [243,243,243]);
+    doc.setFillColor(bg[0],bg[1],bg[2]);
+    doc.rect(ml,y,TW,rH,'F');
+    doc.setDrawColor(220,220,220); doc.setLineWidth(0.15);
+    doc.line(ml,y+rH,ml+TW,y+rH);
+    // barra izquierda gold en contado
+    if(r.gold){ doc.setFillColor(245,197,24); doc.rect(ml,y,2.5,rH,'F'); }
+
+    // col 0: plan
+    doc.setTextColor(r.gold?120:40, r.gold?80:40, 0);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.text(r.plan, cX[0]+(r.gold?6:4), y+6);
+    if(r.sub){
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(110,110,110);
+      doc.text(r.sub, cX[0]+4, y+12.5);
+    }
+
+    // col 1: total
+    doc.setTextColor(r.gold?130:35, r.gold?85:35, 0);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+    doc.text('USD '+fmt(r.total), cX[1]+cW[1]/2, y+7, {align:'center'});
+
+    // col 2: cuota 1
+    doc.setTextColor(35,35,35);
     doc.setFont('helvetica','bold'); doc.setFontSize(8);
-    doc.text(r.plan,colX[0]+(r.isContado?7:5),y+6.5);
-    if(r.sub){doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(120,120,120);doc.text(r.sub,colX[0]+5,y+13);}
-    doc.setTextColor(r.isContado?140:30,r.isContado?90:30,0);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('USD '+fmt(r.total),colX[1]+colW[1]/2,y+7.5,{align:'center'});
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-    doc.text('USD '+fmt(r.c1),colX[2]+colW[2]/2,y+6.5,{align:'center'});
-    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(130,130,130);
-    doc.text(r.c1sub,colX[2]+colW[2]/2,y+13,{align:'center'});
-    if(r.cr!==null){
-      doc.setTextColor(30,30,30); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-      doc.text('USD '+fmt(r.cr),colX[3]+colW[3]/2,y+6.5,{align:'center'});
-      doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(130,130,130);
-      doc.text(r.crsub,colX[3]+colW[3]/2,y+13,{align:'center'});
+    doc.text('USD '+fmt(r.c1), cX[2]+cW[2]/2, y+6.5, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(120,120,120);
+    doc.text(r.c1sub, cX[2]+cW[2]/2, y+13, {align:'center'});
+
+    // col 3: cuotas rest
+    if(r.cr !== null){
+      doc.setTextColor(35,35,35); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.text('USD '+fmt(r.cr), cX[3]+cW[3]/2, y+6.5, {align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(120,120,120);
+      doc.text(r.crsub, cX[3]+cW[3]/2, y+13, {align:'center'});
     } else {
-      doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(12);
-      doc.text('—',colX[3]+colW[3]/2,y+10,{align:'center'});
+      doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(11);
+      doc.text('-', cX[3]+cW[3]/2, y+10, {align:'center'});
     }
     y += rH;
   });
 
-  y += 10;
-  doc.setFillColor(255,251,220); doc.setDrawColor(245,197,24); doc.setLineWidth(0.4);
-  doc.roundedRect(ml,y,mr-ml,10,2,2,'FD');
-  doc.setTextColor(100,70,0); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-  doc.text('★  La Cuota 1 incluye el IVA completo del equipo y el flete total. Las cuotas restantes no llevan IVA adicional.',ml+5,y+6.5);
+  y += 8;
 
-  doc.setFillColor(13,13,13); doc.rect(0,272,W,25,'F');
-  doc.setFillColor(245,197,24); doc.rect(0,272,W,1.5,'F');
-  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-  doc.text('HDG MAQUINARIAS AGRÍCOLAS — HORACIO D. GIRAUDO — CONCESIONARIO OFICIAL HANOMAG',W/2,283,{align:'center'});
-  doc.setTextColor(140,140,140); doc.setFont('helvetica','normal'); doc.setFontSize(7);
-  doc.text('Vigencia sujeta a cambios sin previo aviso.',W/2,291,{align:'center'});
+  // Observaciones (si hay)
+  var obs = document.getElementById('observaciones').value.trim();
+  if (obs) {
+    doc.setFillColor(245,245,245);
+    doc.setDrawColor(180,180,180); doc.setLineWidth(0.3);
+    doc.roundedRect(ml, y, TW, 14, 2, 2, 'FD');
+    doc.setTextColor(80,80,80); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+    doc.text('OBSERVACIONES:', ml+4, y+5.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(40,40,40);
+    var lines = doc.splitTextToSize(obs, TW-8);
+    doc.text(lines, ml+4, y+11);
+    y += 14 + (lines.length > 1 ? (lines.length-1)*4 : 0) + 6;
+  }
 
-  var nombre='Cotizacion_HDG_'+(d.modelo||'Hanomag').replace(/\s+/g,'_')+'_'+hoy.toISOString().slice(0,10)+'.pdf';
+  // Footer
+  doc.setFillColor(13,13,13);
+  doc.rect(0,272,W,25,'F');
+  doc.setFillColor(245,197,24);
+  doc.rect(0,272,W,1.5,'F');
+  doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('HDG MAQUINARIAS AGRICOLAS - HORACIO D. GIRAUDO - CONCESIONARIO OFICIAL HANOMAG', W/2, 282, {align:'center'});
+  doc.setTextColor(140,140,140); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+  doc.text('Vigencia sujeta a cambios sin previo aviso.', W/2, 290, {align:'center'});
+
+  var nombre = 'Cotizacion_HDG_'+(d.modelo||'Hanomag').replace(/\s+/g,'_')+'_'+hoy.toISOString().slice(0,10)+'.pdf';
   doc.save(nombre);
-  showToast('✓ PDF generado correctamente');
+  showToast('PDF generado correctamente');
 }
 
-var pinBuffer='';
-function openAdmin(){pinBuffer='';actualizarDots();document.getElementById('pinError').textContent='';document.getElementById('modalPin').classList.add('active');}
-function pinPress(d){if(!d||pinBuffer.length>=4)return;pinBuffer+=d;actualizarDots();if(pinBuffer.length===4)setTimeout(validarPin,200);}
-function pinDel(){pinBuffer=pinBuffer.slice(0,-1);actualizarDots();}
-function actualizarDots(){for(var i=0;i<4;i++)document.getElementById('dot'+i).classList.toggle('filled',i<pinBuffer.length);}
+var pinBuffer = '';
+function openAdmin(){ pinBuffer=''; actualizarDots(); document.getElementById('pinError').textContent=''; document.getElementById('modalPin').classList.add('active'); }
+function pinPress(d){ if(!d||pinBuffer.length>=4) return; pinBuffer+=d; actualizarDots(); if(pinBuffer.length===4) setTimeout(validarPin,200); }
+function pinDel(){ pinBuffer=pinBuffer.slice(0,-1); actualizarDots(); }
+function actualizarDots(){ for(var i=0;i<4;i++) document.getElementById('dot'+i).classList.toggle('filled',i<pinBuffer.length); }
 function validarPin(){
-  if(pinBuffer===getPin()){cerrarModal('modalPin');abrirConfigAdmin();}
-  else{document.getElementById('pinError').textContent='PIN incorrecto. Intentá de nuevo.';pinBuffer='';actualizarDots();}
+  if(pinBuffer===getPin()){ cerrarModal('modalPin'); abrirConfigAdmin(); }
+  else{ document.getElementById('pinError').textContent='PIN incorrecto. Intenta de nuevo.'; pinBuffer=''; actualizarDots(); }
 }
 function abrirConfigAdmin(){
   var cfg=getConfig();
@@ -419,19 +492,24 @@ function abrirConfigAdmin(){
   document.getElementById('modalAdmin').classList.add('active');
 }
 function guardarConfig(){
-  var cfg={tasa2:parseFloat(document.getElementById('tasa2').value)||0,tasa3:parseFloat(document.getElementById('tasa3').value)||0,tasa4:parseFloat(document.getElementById('tasa4').value)||0,iva:parseFloat(document.getElementById('tasaIva').value)||0};
-  saveConfig(cfg);cerrarModal('modalAdmin');calcular();showToast('✓ Configuración guardada');
+  var cfg={
+    tasa2:parseFloat(document.getElementById('tasa2').value)||0,
+    tasa3:parseFloat(document.getElementById('tasa3').value)||0,
+    tasa4:parseFloat(document.getElementById('tasa4').value)||0,
+    iva:parseFloat(document.getElementById('tasaIva').value)||0
+  };
+  saveConfig(cfg); cerrarModal('modalAdmin'); calcular(); showToast('Configuracion guardada');
 }
-function cambiarPin(){document.getElementById('nuevoPin').value='';document.getElementById('confirmarPin').value='';document.getElementById('pinCambioError').textContent='';document.getElementById('modalCambiarPin').classList.add('active');}
+function cambiarPin(){ document.getElementById('nuevoPin').value=''; document.getElementById('confirmarPin').value=''; document.getElementById('pinCambioError').textContent=''; document.getElementById('modalCambiarPin').classList.add('active'); }
 function confirmarCambioPin(){
-  var p1=document.getElementById('nuevoPin').value,p2=document.getElementById('confirmarPin').value;
-  if(p1.length!==4||!/^\d{4}$/.test(p1)){document.getElementById('pinCambioError').textContent='El PIN debe tener 4 dígitos numéricos.';return;}
-  if(p1!==p2){document.getElementById('pinCambioError').textContent='Los PINs no coinciden.';return;}
-  localStorage.setItem(PIN_KEY,p1);cerrarModal('modalCambiarPin');showToast('✓ PIN actualizado');
+  var p1=document.getElementById('nuevoPin').value, p2=document.getElementById('confirmarPin').value;
+  if(p1.length!==4||!/^\d{4}$/.test(p1)){ document.getElementById('pinCambioError').textContent='El PIN debe tener 4 digitos numericos.'; return; }
+  if(p1!==p2){ document.getElementById('pinCambioError').textContent='Los PINs no coinciden.'; return; }
+  localStorage.setItem(PIN_KEY,p1); cerrarModal('modalCambiarPin'); showToast('PIN actualizado');
 }
-function cerrarModal(id){document.getElementById(id).classList.remove('active');}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);}
-document.querySelectorAll('.modal-overlay').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('active');});});
+function cerrarModal(id){ document.getElementById(id).classList.remove('active'); }
+function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2500); }
+document.querySelectorAll('.modal-overlay').forEach(function(o){ o.addEventListener('click',function(e){ if(e.target===o) o.classList.remove('active'); }); });
 </script>
 </body>
 </html>
