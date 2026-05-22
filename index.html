@@ -215,11 +215,11 @@ body{font-family:'Barlow',sans-serif;background:var(--black);color:var(--white);
     <div class="modal-body">
       <div class="input-group">
         <label class="input-label">Nuevo PIN (4 d&iacute;gitos)</label>
-        <input class="input-field" id="nuevoPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+        <input class="input-field" id="nuevoPin" type="password" maxlength="4" inputmode="numeric" placeholder="Â·Â·Â·Â·">
       </div>
       <div class="input-group">
         <label class="input-label">Confirmar PIN</label>
-        <input class="input-field" id="confirmarPin" type="password" maxlength="4" inputmode="numeric" placeholder="····">
+        <input class="input-field" id="confirmarPin" type="password" maxlength="4" inputmode="numeric" placeholder="Â·Â·Â·Â·">
       </div>
       <p class="pin-error" id="pinCambioError"></p>
     </div>
@@ -264,12 +264,12 @@ function calcular() {
   }
   empty.style.display = 'none'; btn.disabled = false;
 
-  // ── CONTADO ──
+  // â”€â”€ CONTADO â”€â”€
   // Total = base + IVA(base) + flete
   var iva_contado = base * (cfg.iva / 100);
   var contado_total = base + iva_contado + flete;
 
-  // ── COL 2 — 4 cheques ──
+  // â”€â”€ COL 2 â€” 4 cheques â”€â”€
   // base_fin = base + recargo
   // IVA sobre base_fin
   // cuota_pura = base_fin / 4
@@ -281,14 +281,14 @@ function calcular() {
   var cuota1_2 = cuota_pura2 + iva2 + flete;
   var total2 = base2 + iva2 + flete;
 
-  // ── COL 3 — 7 cheques ──
+  // â”€â”€ COL 3 â€” 7 cheques â”€â”€
   var base3 = base * (1 + cfg.tasa3 / 100);
   var iva3 = base3 * (cfg.iva / 100);
   var cuota_pura3 = base3 / 7;
   var cuota1_3 = cuota_pura3 + iva3 + flete;
   var total3 = base3 + iva3 + flete;
 
-  // ── COL 4 — 13 cheques ──
+  // â”€â”€ COL 4 â€” 13 cheques â”€â”€
   var base4 = base * (1 + cfg.tasa4 / 100);
   var iva4 = base4 * (cfg.iva / 100);
   var cuota_pura4 = base4 / 13;
@@ -305,15 +305,15 @@ function calcular() {
   };
 
   cards.innerHTML =
-    cardHTML('Col 1 — Contado', 'CONTADO', true, contado_total, iva_contado,
-      [{label:'Pago único', value:contado_total, detail:'Precio + IVA + flete'}]) +
-    cardHTML('Col 2 — 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, total2, iva2,
+    cardHTML('Col 1 â€” Contado', 'CONTADO', true, contado_total, iva_contado,
+      [{label:'Pago Ãºnico', value:contado_total, detail:'Precio + IVA + flete'}]) +
+    cardHTML('Col 2 â€” 4 cheques / 45d', '+'+cfg.tasa2+'% recargo', false, total2, iva2,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_2, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2, 3 y 4', value:cuota_pura2, detail:'3 cuotas sin IVA ni flete'}]) +
-    cardHTML('Col 3 — 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, total3, iva3,
+    cardHTML('Col 3 â€” 7 cheques / 90d', '+'+cfg.tasa3+'% recargo', false, total3, iva3,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_3, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2 a 7', value:cuota_pura3, detail:'6 cuotas sin IVA ni flete'}]) +
-    cardHTML('Col 4 — 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, total4, iva4,
+    cardHTML('Col 4 â€” 13 cheques / 180d', '+'+cfg.tasa4+'% recargo', false, total4, iva4,
       [{label:'Cuota 1 (IVA + flete)', value:cuota1_4, detail:'IVA total + flete en esta cuota'},
        {label:'Cuotas 2 a 13', value:cuota_pura4, detail:'12 cuotas sin IVA ni flete'}]);
 }
@@ -361,10 +361,10 @@ function generarPDF() {
   // Textos header
   var hx = ml + 42;
   doc.setTextColor(245,197,24); doc.setFont('helvetica','bold'); doc.setFontSize(17);
-  doc.text('COTIZACION HANOMAG', hx, 17);
+  doc.text('COTIZACION HANOMAG - MICHIGAN', hx, 17);
   doc.setTextColor(180,180,180); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
   doc.text('HORACIO D. GIRAUDO - CONCESIONARIO OFICIAL', hx, 26);
-  doc.text('Lista Sugerida Publica N 2-26 / USD - Vigente desde 27/03/2026', hx, 34);
+  
   var hoy = new Date();
   var fecha = hoy.toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
   doc.setTextColor(200,200,200); doc.setFontSize(8);
@@ -394,9 +394,9 @@ function generarPDF() {
 
   var rows = [
     {plan:'CONTADO', sub:'', total:d.contado_total, c1:d.contado_total, c1sub:'Pago unico c/ IVA y flete', cr:null, crsub:'', gold:true},
-    {plan:'COL 2 - 4 CHEQUES', sub:'45 dias (+'+d.cfg.tasa2+'%)', total:d.total2, c1:d.cuota1_2, c1sub:'IVA total + flete', cr:d.cuota_pura2, crsub:'3 cuotas s/ IVA', gold:false},
-    {plan:'COL 3 - 7 CHEQUES', sub:'90 dias (+'+d.cfg.tasa3+'%)', total:d.total3, c1:d.cuota1_3, c1sub:'IVA total + flete', cr:d.cuota_pura3, crsub:'6 cuotas s/ IVA', gold:false},
-    {plan:'COL 4 - 13 CHEQUES', sub:'180 dias (+'+d.cfg.tasa4+'%)', total:d.total4, c1:d.cuota1_4, c1sub:'IVA total + flete', cr:d.cuota_pura4, crsub:'12 cuotas s/ IVA', gold:false}
+    {plan:'COL 2 - 4 CHEQUES', sub:'', total:d.total2, c1:d.cuota1_2, c1sub:'IVA total + flete', cr:d.cuota_pura2, crsub:'3 cuotas s/ IVA', gold:false},
+    {plan:'COL 3 - 7 CHEQUES', sub:'', total:d.total3, c1:d.cuota1_3, c1sub:'IVA total + flete', cr:d.cuota_pura3, crsub:'6 cuotas s/ IVA', gold:false},
+    {plan:'COL 4 - 13 CHEQUES', sub:'', total:d.total4, c1:d.cuota1_4, c1sub:'IVA total + flete', cr:d.cuota_pura4, crsub:'12 cuotas s/ IVA', gold:false}
   ];
 
   rows.forEach(function(r, idx) {
